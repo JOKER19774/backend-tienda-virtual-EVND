@@ -1,0 +1,28 @@
+{
+  "name": "tienda_virtual",
+  "version": "1.0.0",
+  "description": "Creación de un API-REST para administrar un carrito de compras en lineaCreación de un API-REST para administrar un carrito de compras en linea",
+  "repository": {
+    "type": "git",
+    "url": "git remote add origin https://github.com/JOKER19774/backend-tienda-virtual-EVND.git"
+  },
+  "license": "ISC",
+  "author": "\"Giovanni Diego Gutiérrez Castelán\"",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "express": "^5.2.1",
+    "morgan": "^1.10.1",
+    "mysql2": "^3.20.0",
+    "sequelize": "^6.37.8"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tienda Virtual</title>
+  <style>body{font-family:Arial,sans-serif;max-width:720px;margin:2rem auto;padding:1rem;}h1{color:#2f6f9a;}button{background:#2f6f9a;color:white;border:none;padding:.7rem 1rem;cursor:pointer;margin-top:1rem;}#message{margin-top:1rem;font-size:1rem;}</style>
+</head>
+<body>
+  <h1>Tienda Virtual</h1>
+  <p>Bienvenido a tu API de tienda. Abre esta página para ver que el servidor funciona.</p>
+  <button onclick="fetch('/api/products').then(r=>r.json()).then(d=>document.getElementById('message').textContent=JSON.stringify(d)).catch(e=>document.getElementById('message').textContent='Error');">Cargar productos</button>
+  <div id="message"></div>
+</body>
+</html>
