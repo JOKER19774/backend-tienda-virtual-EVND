@@ -1,19 +1,15 @@
-const express       = require('express');
-const logger        = require('morgan');
-const bodyParser    = require('body-parser');
-// This will be our application entry. We'll setup our server here.
-const http = require('http');
-// Set up the express app
+const express    = require('express');
+const logger     = require('morgan');
+const bodyParser = require('body-parser');
+const http       = require('http');
+const db         = require('./models');
+
 const app = express();
-// Log requests to the console.
 app.use(logger('dev'));
-// Parse incoming requests data (https://github.com/expressjs/body-parser)
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-// Serve static files from public folder
 app.use(express.static('public'));
 
-// API endpoint for products
 app.get('/api/products', (req, res) => {
   res.json({
     products: [
@@ -24,15 +20,40 @@ app.get('/api/products', (req, res) => {
   });
 });
 
-// Default route for 404
-app.use((req, res, next) => {
+app.get('/api/usuarios', async (req, res) => {
+  try {
+    const usuarios = await db.tbc_usuarios.findAll({ limit: 20 });
+    res.json({ usuarios });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'No se pudo obtener usuarios' });
+  }
+});
+
+app.post('/api/usuarios', async (req, res) => {
+  try {
+    const usuario = await db.tbc_usuarios.create(req.body);
+    res.status(201).json(usuario);
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: 'Datos inválidos', details: error.message });
+  }
+});
+
+app.use((req, res) => {
   res.status(404).json({ error: 'No encontrado' });
 });
 
-const port = parseInt(process.env.PORT, 10) || 8000;
+const port = parseInt(process.env.APP_PORT, 10) || 8000;
 app.set('port', port);
-const server = http.createServer(app);
-server.listen(port, () => {
-  console.log(`Servidor escuchando en http://localhost:${port}`);
+
+db.sequelize.sync().then(() => {
+  const server = http.createServer(app);
+  server.listen(port, () => {
+    console.log(`Servidor escuchando en http://localhost:${port}`);
+  });
+}).catch(err => {
+  console.error('Error al sincronizar la DB:', err.message);
 });
+
 module.exports = app;
