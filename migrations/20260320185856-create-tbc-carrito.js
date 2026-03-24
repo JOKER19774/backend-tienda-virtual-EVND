@@ -24,14 +24,14 @@ module.exports = {
         defaultValue: 0,
         type: Sequelize.DECIMAL(10, 2)
       },
+      estado: {
+        allowNull: false,
+        defaultValue: 'pendiente',
+        type: Sequelize.ENUM('pendiente', 'pagado')
+      },
       fecha_creacion: {
         allowNull: false,
         type: Sequelize.DATE
-      },
-      estado: {
-        allowNull: false,
-        defaultValue: 'activo',
-        type: Sequelize.STRING(50)
       },
       createdAt: {
         allowNull: false,

@@ -26,14 +26,14 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 0
     },
+    estado: {
+      type: DataTypes.ENUM('pendiente', 'pagado'),
+      allowNull: false,
+      defaultValue: 'pendiente'
+    },
     fecha_creacion: {
       type: DataTypes.DATE,
       allowNull: false
-    },
-    estado: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-      defaultValue: 'activo'
     }
   }, {
     sequelize,

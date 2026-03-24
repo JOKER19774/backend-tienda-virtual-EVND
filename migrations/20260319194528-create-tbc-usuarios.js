@@ -23,7 +23,6 @@ module.exports = {
       },
       email: {
         allowNull: false,
-        unique: true,
         type: Sequelize.STRING(120)
       },
       password: {
@@ -33,7 +32,7 @@ module.exports = {
       rol: {
         allowNull: false,
         defaultValue: 'cliente',
-        type: Sequelize.STRING(50)
+        type: Sequelize.ENUM('admin', 'cliente')
       },
       fecha_registro: {
         allowNull: false,
