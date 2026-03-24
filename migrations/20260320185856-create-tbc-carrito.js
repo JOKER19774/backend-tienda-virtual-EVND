@@ -10,16 +10,28 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       id_usuario: {
-        type: Sequelize.INTEGER
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'tbc_usuarios',
+          key: 'id'
+        },
+        onUpdate: 'NO ACTION',
+        onDelete: 'NO ACTION'
       },
       total: {
-        type: Sequelize.DECIMAL
+        allowNull: false,
+        defaultValue: 0,
+        type: Sequelize.DECIMAL(10, 2)
       },
       fecha_creacion: {
+        allowNull: false,
         type: Sequelize.DATE
       },
       estado: {
-        type: Sequelize.STRING
+        allowNull: false,
+        defaultValue: 'activo',
+        type: Sequelize.STRING(50)
       },
       createdAt: {
         allowNull: false,

@@ -4,22 +4,20 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class tbc_usuarios extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
+      tbc_usuarios.hasMany(models.tbc_carrito, {
+        as: 'carritos',
+        foreignKey: 'id_usuario',
+      });
     }
   }
   tbc_usuarios.init({
     nombre: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(150),
       allowNull: false
     },
     direccion: {
-      type: DataTypes.STRING(200),
+      type: DataTypes.STRING(150),
       allowNull: false
     },
     telefono: {
@@ -28,10 +26,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     email: {
       type: DataTypes.STRING(120),
-      allowNull: false
-      },
+      allowNull: false,
+      unique: true
+    },
     password: {
-      type: DataTypes.STRING(120),
+      type: DataTypes.STRING(255),
       allowNull: false
     },
     rol: {
@@ -46,6 +45,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'tbc_usuarios',
+    tableName: 'tbc_usuarios',
   });
   return tbc_usuarios;
 };

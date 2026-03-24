@@ -4,23 +4,41 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class tbc_carrito extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
+      tbc_carrito.belongsTo(models.tbc_usuarios, {
+        as: 'usuario',
+        foreignKey: 'id_usuario',
+      });
+
+      tbc_carrito.hasMany(models.tbc_carrito_detalle, {
+        as: 'detalles',
+        foreignKey: 'id_carrito',
+      });
     }
   }
   tbc_carrito.init({
-    id_usuario: DataTypes.INTEGER,
-    total: DataTypes.DECIMAL,
-    fecha_creacion: DataTypes.DATE,
-    estado: DataTypes.STRING
+    id_usuario: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    total: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0
+    },
+    fecha_creacion: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    estado: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      defaultValue: 'activo'
+    }
   }, {
     sequelize,
     modelName: 'tbc_carrito',
+    tableName: 'tbc_carritos',
   });
   return tbc_carrito;
 };

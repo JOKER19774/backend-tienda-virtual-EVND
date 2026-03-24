@@ -10,19 +10,31 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       nombre: {
-        type: Sequelize.STRING
+        allowNull: false,
+        type: Sequelize.STRING(100)
       },
       descripcion: {
-        type: Sequelize.STRING
+        allowNull: true,
+        type: Sequelize.STRING(255)
       },
       precio: {
-        type: Sequelize.FLOAT
+        allowNull: false,
+        type: Sequelize.DECIMAL(10, 2)
       },
       stock: {
+        allowNull: false,
+        defaultValue: 0,
         type: Sequelize.INTEGER
       },
       id_categoria: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'tbc_categoria',
+          key: 'id'
+        },
+        onUpdate: 'NO ACTION',
+        onDelete: 'NO ACTION'
       },
       createdAt: {
         allowNull: false,

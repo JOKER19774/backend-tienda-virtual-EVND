@@ -4,24 +4,44 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class tbc_productos extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
-      // define association here
+      tbc_productos.belongsTo(models.tbc_categoria, {
+        as: 'categoria',
+        foreignKey: 'id_categoria',
+      });
+
+      tbc_productos.hasMany(models.tbc_carrito_detalle, {
+        as: 'detalles_carrito',
+        foreignKey: 'id_producto',
+      });
     }
   }
   tbc_productos.init({
-    nombre: DataTypes.STRING,
-    descripcion: DataTypes.STRING,
-    precio: DataTypes.FLOAT,
-    stock: DataTypes.INTEGER,
-    id_categoria: DataTypes.INTEGER
+    nombre: {
+      type: DataTypes.STRING(100),
+      allowNull: false
+    },
+    descripcion: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    precio: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false
+    },
+    stock: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    id_categoria: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    }
   }, {
     sequelize,
     modelName: 'tbc_productos',
+    tableName: 'tbc_productos',
   });
   return tbc_productos;
 };
