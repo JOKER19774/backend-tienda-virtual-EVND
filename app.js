@@ -40,6 +40,8 @@ app.post('/api/usuarios', async (req, res) => {
   }
 });
 
+require('./routes/route.categoria')(app);
+
 app.use((req, res) => {
   res.status(404).json({ error: 'No encontrado' });
 });
