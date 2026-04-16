@@ -1,46 +1,69 @@
-const express    = require('express');
-const logger     = require('morgan');
+const express = require('express');
+const logger = require('morgan');
 const bodyParser = require('body-parser');
-const http       = require('http');
-const db         = require('./models');
+const http = require('http');
+const db = require('./models');
 
 const app = express();
+const apiRoutes = [
+  { method: 'GET', path: '/api' },
+  { method: 'GET', path: '/api/products' },
+  { method: 'GET', path: '/api/usuarios' },
+  { method: 'GET', path: '/api/usuarios/:id' },
+  { method: 'GET', path: '/api/usuarios/nombre/:nombre' },
+  { method: 'POST', path: '/api/usuarios' },
+  { method: 'PUT', path: '/api/usuarios/:id' },
+  { method: 'DELETE', path: '/api/usuarios/:id' },
+  { method: 'GET', path: '/api/categorias' },
+  { method: 'GET', path: '/api/categorias/:id' },
+  { method: 'GET', path: '/api/categorias/nombre/:nombre' },
+  { method: 'POST', path: '/api/categorias' },
+  { method: 'PUT', path: '/api/categorias/:id' },
+  { method: 'DELETE', path: '/api/categorias/:id' },
+  { method: 'GET', path: '/api/productos' },
+  { method: 'GET', path: '/api/productos/:id' },
+  { method: 'POST', path: '/api/productos' },
+  { method: 'PUT', path: '/api/productos/:id' },
+  { method: 'DELETE', path: '/api/productos/:id' },
+  { method: 'GET', path: '/api/carrito' },
+  { method: 'GET', path: '/api/carrito/:id' },
+  { method: 'POST', path: '/api/carrito' },
+  { method: 'PUT', path: '/api/carrito/:id' },
+  { method: 'DELETE', path: '/api/carrito/:id' },
+  { method: 'GET', path: '/api/carrito-detalle' },
+  { method: 'GET', path: '/api/carrito-detalle/:id' },
+  { method: 'POST', path: '/api/carrito-detalle' },
+  { method: 'PUT', path: '/api/carrito-detalle/:id' },
+  { method: 'DELETE', path: '/api/carrito-detalle/:id' }
+];
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'));
 
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'API Tienda Virtual disponible',
+    routes: apiRoutes
+  });
+});
+
 app.get('/api/products', (req, res) => {
   res.json({
     products: [
       { id: 1, name: 'Camiseta', price: 199, stock: 10 },
-      { id: 2, name: 'Pantalón', price: 349, stock: 7 },
+      { id: 2, name: 'Pantalon', price: 349, stock: 7 },
       { id: 3, name: 'Gorra', price: 89, stock: 15 }
     ]
   });
 });
 
-app.get('/api/usuarios', async (req, res) => {
-  try {
-    const usuarios = await db.tbc_usuarios.findAll({ limit: 20 });
-    res.json({ usuarios });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'No se pudo obtener usuarios' });
-  }
-});
-
-app.post('/api/usuarios', async (req, res) => {
-  try {
-    const usuario = await db.tbc_usuarios.create(req.body);
-    res.status(201).json(usuario);
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ error: 'Datos inválidos', details: error.message });
-  }
-});
-
+require('./routes/route.usuario')(app);
 require('./routes/route.categoria')(app);
+require('./routes/route.producto')(app);
+require('./routes/route.carrito')(app);
+require('./routes/route.carrito_detalle')(app);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'No encontrado' });

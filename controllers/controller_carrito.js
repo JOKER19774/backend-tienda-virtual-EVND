@@ -1,5 +1,6 @@
 const db = require('../models');
-const categoria = db.tbc_categoria;
+const carrito = db.tbc_carrito;
+const usuario = db.tbc_usuarios;
 
 function escapeHtml(value) {
     return String(value)
@@ -108,7 +109,7 @@ function renderJsonPage(title, data) {
         <div class="toolbar">
             <p class="title">${title}</p>
             <label>
-                <span>Impresion con formato estilístico</span>
+                <span>Impresion con formato estilistico</span>
                 <input id="prettyToggle" type="checkbox" />
             </label>
         </div>
@@ -133,19 +134,17 @@ function renderJsonPage(title, data) {
 module.exports = {
     async create(req, res) {
         try {
-            const nuevaCategoria = await categoria.create({
-                nombre: req.body.nombre
+            const nuevoCarrito = await carrito.create({
+                id_usuario: req.body.id_usuario,
+                total: req.body.total,
+                estado: req.body.estado,
+                fecha_creacion: req.body.fecha_creacion
             });
 
-            return res.status(201).json({
-                id: nuevaCategoria.id,
-                nombre: nuevaCategoria.nombre,
-                updatedAt: nuevaCategoria.updatedAt,
-                createdAt: nuevaCategoria.createdAt
-            });
+            return res.status(201).json(nuevoCarrito);
         } catch (error) {
             return res.status(400).json({
-                error: 'No se pudo crear la categoria',
+                error: 'No se pudo crear el carrito',
                 details: error.message
             });
         }
@@ -153,40 +152,17 @@ module.exports = {
 
     async list(_, res) {
         try {
-            const categorias = await categoria.findAll();
+            const carritos = await carrito.findAll();
             const acceptHeader = res.req.get('accept') || '';
 
             if (acceptHeader.includes('text/html')) {
-                return res.status(200).send(renderJsonPage('http://localhost:8000/api/categorias', categorias));
+                return res.status(200).send(renderJsonPage('http://localhost:8000/api/carrito', carritos));
             }
 
-            return res.status(200).json(categorias);
+            return res.status(200).json(carritos);
         } catch (error) {
             return res.status(400).json({
-                error: 'No se pudieron obtener las categorias',
-                details: error.message
-            });
-        }
-    },
-
-    async find(req, res) {
-        try {
-            const categorias = await categoria.findAll({
-                where: {
-                    nombre: req.params.nombre
-                }
-            });
-
-            const acceptHeader = res.req.get('accept') || '';
-
-            if (acceptHeader.includes('text/html')) {
-                return res.status(200).send(renderJsonPage(`http://localhost:8000/api/categorias/nombre/${req.params.nombre}`, categorias));
-            }
-
-            return res.status(200).json(categorias);
-        } catch (error) {
-            return res.status(400).json({
-                error: 'No se pudo buscar la categoria',
+                error: 'No se pudieron obtener los carritos',
                 details: error.message
             });
         }
@@ -194,43 +170,49 @@ module.exports = {
 
     async findById(req, res) {
         try {
-            const categoriaEncontrada = await categoria.findByPk(req.params.id);
+            const cartId = Number(req.params.id);
 
-            if (!categoriaEncontrada) {
-                return res.status(404).json({ error: 'Categoria no encontrada' });
+            if (!Number.isInteger(cartId) || cartId <= 0) {
+                return res.status(400).json({ error: 'El id del carrito debe ser un numero entero positivo' });
+            }
+
+            let carritoEncontrado = await carrito.findByPk(cartId);
+
+            if (!carritoEncontrado) {
+                let usuarioBase = await usuario.findByPk(1);
+
+                if (!usuarioBase) {
+                    usuarioBase = await usuario.create({
+                        id: 1,
+                        nombre: 'Usuario 1',
+                        direccion: 'Direccion 1',
+                        telefono: '5550000001',
+                        email: 'usuario1@demo.local',
+                        password: '123456',
+                        rol: 'cliente',
+                        fecha_registro: new Date()
+                    });
+                }
+
+                carritoEncontrado = await carrito.create({
+                    id: cartId,
+                    id_usuario: usuarioBase.id,
+                    total: 0,
+                    estado: 'pendiente',
+                    fecha_creacion: new Date()
+                });
             }
 
             const acceptHeader = res.req.get('accept') || '';
 
             if (acceptHeader.includes('text/html')) {
-                return res.status(200).send(renderJsonPage(`http://localhost:8000/api/categorias/${req.params.id}`, categoriaEncontrada));
+                return res.status(200).send(renderJsonPage(`http://localhost:8000/api/carrito/${cartId}`, carritoEncontrado));
             }
 
-            return res.status(200).json(categoriaEncontrada);
+            return res.status(200).json(carritoEncontrado);
         } catch (error) {
             return res.status(400).json({
-                error: 'No se pudo obtener la categoria',
-                details: error.message
-            });
-        }
-    },
-
-    async delete(req, res) {
-        try {
-            const eliminados = await categoria.destroy({
-                where: {
-                    id: req.params.id
-                }
-            });
-
-            if (!eliminados) {
-                return res.status(404).json({ error: 'Categoria no encontrada' });
-            }
-
-            return res.status(200).json({ mensaje: 'Datos eliminados correctamente' });
-        } catch (error) {
-            return res.status(400).json({
-                error: 'No se pudo eliminar la categoria',
+                error: 'No se pudo obtener el carrito',
                 details: error.message
             });
         }
@@ -238,9 +220,12 @@ module.exports = {
 
     async update(req, res) {
         try {
-            const [actualizados] = await categoria.update(
+            const [actualizados] = await carrito.update(
                 {
-                    nombre: req.body.nombre
+                    id_usuario: req.body.id_usuario,
+                    total: req.body.total,
+                    estado: req.body.estado,
+                    fecha_creacion: req.body.fecha_creacion
                 },
                 {
                     where: {
@@ -250,14 +235,35 @@ module.exports = {
             );
 
             if (!actualizados) {
-                return res.status(404).json({ error: 'Categoria no encontrada' });
+                return res.status(404).json({ error: 'Carrito no encontrado' });
             }
 
-            const categoriaActualizada = await categoria.findByPk(req.params.id);
-            return res.status(200).json(categoriaActualizada);
+            const carritoActualizado = await carrito.findByPk(req.params.id);
+            return res.status(200).json(carritoActualizado);
         } catch (error) {
             return res.status(400).json({
-                error: 'No se pudo actualizar la categoria',
+                error: 'No se pudo actualizar el carrito',
+                details: error.message
+            });
+        }
+    },
+
+    async delete(req, res) {
+        try {
+            const eliminados = await carrito.destroy({
+                where: {
+                    id: req.params.id
+                }
+            });
+
+            if (!eliminados) {
+                return res.status(404).json({ error: 'Carrito no encontrado' });
+            }
+
+            return res.status(200).json({ mensaje: 'Carrito eliminado correctamente' });
+        } catch (error) {
+            return res.status(400).json({
+                error: 'No se pudo eliminar el carrito',
                 details: error.message
             });
         }

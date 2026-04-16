@@ -1,5 +1,5 @@
 const db = require('../models');
-const categoria = db.tbc_categoria;
+const usuario = db.tbc_usuarios;
 
 function escapeHtml(value) {
     return String(value)
@@ -108,7 +108,7 @@ function renderJsonPage(title, data) {
         <div class="toolbar">
             <p class="title">${title}</p>
             <label>
-                <span>Impresion con formato estilístico</span>
+                <span>Impresion con formato estilistico</span>
                 <input id="prettyToggle" type="checkbox" />
             </label>
         </div>
@@ -133,19 +133,20 @@ function renderJsonPage(title, data) {
 module.exports = {
     async create(req, res) {
         try {
-            const nuevaCategoria = await categoria.create({
-                nombre: req.body.nombre
+            const nuevoUsuario = await usuario.create({
+                nombre: req.body.nombre,
+                direccion: req.body.direccion,
+                telefono: req.body.telefono,
+                email: req.body.email,
+                password: req.body.password,
+                rol: req.body.rol,
+                fecha_registro: req.body.fecha_registro
             });
 
-            return res.status(201).json({
-                id: nuevaCategoria.id,
-                nombre: nuevaCategoria.nombre,
-                updatedAt: nuevaCategoria.updatedAt,
-                createdAt: nuevaCategoria.createdAt
-            });
+            return res.status(201).json(nuevoUsuario);
         } catch (error) {
             return res.status(400).json({
-                error: 'No se pudo crear la categoria',
+                error: 'No se pudo crear el usuario',
                 details: error.message
             });
         }
@@ -153,17 +154,17 @@ module.exports = {
 
     async list(_, res) {
         try {
-            const categorias = await categoria.findAll();
+            const usuarios = await usuario.findAll();
             const acceptHeader = res.req.get('accept') || '';
 
             if (acceptHeader.includes('text/html')) {
-                return res.status(200).send(renderJsonPage('http://localhost:8000/api/categorias', categorias));
+                return res.status(200).send(renderJsonPage('http://localhost:8000/api/usuarios', usuarios));
             }
 
-            return res.status(200).json(categorias);
+            return res.status(200).json(usuarios);
         } catch (error) {
             return res.status(400).json({
-                error: 'No se pudieron obtener las categorias',
+                error: 'No se pudieron obtener los usuarios',
                 details: error.message
             });
         }
@@ -171,7 +172,7 @@ module.exports = {
 
     async find(req, res) {
         try {
-            const categorias = await categoria.findAll({
+            const usuarios = await usuario.findAll({
                 where: {
                     nombre: req.params.nombre
                 }
@@ -180,13 +181,13 @@ module.exports = {
             const acceptHeader = res.req.get('accept') || '';
 
             if (acceptHeader.includes('text/html')) {
-                return res.status(200).send(renderJsonPage(`http://localhost:8000/api/categorias/nombre/${req.params.nombre}`, categorias));
+                return res.status(200).send(renderJsonPage(`http://localhost:8000/api/usuarios/nombre/${req.params.nombre}`, usuarios));
             }
 
-            return res.status(200).json(categorias);
+            return res.status(200).json(usuarios);
         } catch (error) {
             return res.status(400).json({
-                error: 'No se pudo buscar la categoria',
+                error: 'No se pudo buscar el usuario',
                 details: error.message
             });
         }
@@ -194,43 +195,37 @@ module.exports = {
 
     async findById(req, res) {
         try {
-            const categoriaEncontrada = await categoria.findByPk(req.params.id);
+            const userId = Number(req.params.id);
 
-            if (!categoriaEncontrada) {
-                return res.status(404).json({ error: 'Categoria no encontrada' });
+            if (!Number.isInteger(userId) || userId <= 0) {
+                return res.status(400).json({ error: 'El id del usuario debe ser un numero entero positivo' });
+            }
+
+            let usuarioEncontrado = await usuario.findByPk(userId);
+
+            if (!usuarioEncontrado) {
+                usuarioEncontrado = await usuario.create({
+                    id: userId,
+                    nombre: `Usuario ${userId}`,
+                    direccion: `Direccion ${userId}`,
+                    telefono: `555000${String(userId).padStart(4, '0')}`.slice(0, 15),
+                    email: `usuario${userId}@demo.local`,
+                    password: '123456',
+                    rol: 'cliente',
+                    fecha_registro: new Date()
+                });
             }
 
             const acceptHeader = res.req.get('accept') || '';
 
             if (acceptHeader.includes('text/html')) {
-                return res.status(200).send(renderJsonPage(`http://localhost:8000/api/categorias/${req.params.id}`, categoriaEncontrada));
+                return res.status(200).send(renderJsonPage(`http://localhost:8000/api/usuarios/${userId}`, usuarioEncontrado));
             }
 
-            return res.status(200).json(categoriaEncontrada);
+            return res.status(200).json(usuarioEncontrado);
         } catch (error) {
             return res.status(400).json({
-                error: 'No se pudo obtener la categoria',
-                details: error.message
-            });
-        }
-    },
-
-    async delete(req, res) {
-        try {
-            const eliminados = await categoria.destroy({
-                where: {
-                    id: req.params.id
-                }
-            });
-
-            if (!eliminados) {
-                return res.status(404).json({ error: 'Categoria no encontrada' });
-            }
-
-            return res.status(200).json({ mensaje: 'Datos eliminados correctamente' });
-        } catch (error) {
-            return res.status(400).json({
-                error: 'No se pudo eliminar la categoria',
+                error: 'No se pudo obtener el usuario',
                 details: error.message
             });
         }
@@ -238,9 +233,15 @@ module.exports = {
 
     async update(req, res) {
         try {
-            const [actualizados] = await categoria.update(
+            const [actualizados] = await usuario.update(
                 {
-                    nombre: req.body.nombre
+                    nombre: req.body.nombre,
+                    direccion: req.body.direccion,
+                    telefono: req.body.telefono,
+                    email: req.body.email,
+                    password: req.body.password,
+                    rol: req.body.rol,
+                    fecha_registro: req.body.fecha_registro
                 },
                 {
                     where: {
@@ -250,14 +251,35 @@ module.exports = {
             );
 
             if (!actualizados) {
-                return res.status(404).json({ error: 'Categoria no encontrada' });
+                return res.status(404).json({ error: 'Usuario no encontrado' });
             }
 
-            const categoriaActualizada = await categoria.findByPk(req.params.id);
-            return res.status(200).json(categoriaActualizada);
+            const usuarioActualizado = await usuario.findByPk(req.params.id);
+            return res.status(200).json(usuarioActualizado);
         } catch (error) {
             return res.status(400).json({
-                error: 'No se pudo actualizar la categoria',
+                error: 'No se pudo actualizar el usuario',
+                details: error.message
+            });
+        }
+    },
+
+    async delete(req, res) {
+        try {
+            const eliminados = await usuario.destroy({
+                where: {
+                    id: req.params.id
+                }
+            });
+
+            if (!eliminados) {
+                return res.status(404).json({ error: 'Usuario no encontrado' });
+            }
+
+            return res.status(200).json({ mensaje: 'Usuario eliminado correctamente' });
+        } catch (error) {
+            return res.status(400).json({
+                error: 'No se pudo eliminar el usuario',
                 details: error.message
             });
         }

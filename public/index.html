@@ -3,13 +3,544 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tienda Virtual</title>
-  <style>body{font-family:Arial,sans-serif;max-width:720px;margin:2rem auto;padding:1rem;}h1{color:#2f6f9a;}button{background:#2f6f9a;color:white;border:none;padding:.7rem 1rem;cursor:pointer;margin-top:1rem;}#message{margin-top:1rem;font-size:1rem;}</style>
+  <title>CRUD de Categorias</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 252, 246, 0.9);
+      --panel-strong: #fffaf2;
+      --line: #d8cdbd;
+      --text: #2e2a24;
+      --muted: #74685a;
+      --accent: #b55233;
+      --accent-dark: #8f3f26;
+      --danger: #9c2f2f;
+      --success: #26634d;
+      --shadow: 0 24px 60px rgba(59, 42, 24, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(181, 82, 51, 0.18), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(190, 160, 112, 0.18), transparent 30%),
+        linear-gradient(180deg, #f9f4eb 0%, var(--bg) 100%);
+      padding: 32px 18px;
+    }
+
+    .layout {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+    }
+
+    .panel {
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(216, 205, 189, 0.9);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 28px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(181, 82, 51, 0.1);
+      color: var(--accent-dark);
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 12px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.05;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .form-panel {
+      padding: 24px 24px 28px;
+    }
+
+    .section-title {
+      margin: 0 0 18px;
+      font-size: 1.2rem;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(181, 82, 51, 0.12);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: wait;
+      transform: none;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .secondary {
+      background: #eadfce;
+      color: var(--text);
+    }
+
+    .danger {
+      background: #f7d7d7;
+      color: var(--danger);
+    }
+
+    .workspace {
+      padding: 24px;
+    }
+
+    .workspace-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .workspace-header p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .status {
+      min-height: 52px;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+    }
+
+    .status.info {
+      background: #f4eadf;
+      color: #855b2b;
+      border-color: #e7cfb2;
+    }
+
+    .status.success {
+      background: #ddf0e6;
+      color: var(--success);
+      border-color: #b8dfc8;
+    }
+
+    .status.error {
+      background: #f8dddd;
+      color: var(--danger);
+      border-color: #ecb6b6;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 250, 242, 0.75);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 15px 14px;
+      text-align: left;
+      border-bottom: 1px solid rgba(216, 205, 189, 0.7);
+    }
+
+    th {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      background: rgba(234, 223, 206, 0.55);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .row-actions button {
+      padding: 9px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+    }
+
+    .empty {
+      padding: 28px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Tienda Virtual</h1>
-  <p>Bienvenido a tu API de tienda. Abre esta página para ver que el servidor funciona.</p>
-  <button onclick="fetch('/api/products').then(r=>r.json()).then(d=>document.getElementById('message').textContent=JSON.stringify(d)).catch(e=>document.getElementById('message').textContent='Error');">Cargar productos</button>
-  <div id="message"></div>
+  <main class="layout">
+    <section>
+      <div class="panel hero">
+        <span class="badge">Panel de categorias</span>
+        <h1>Administra tu CRUD desde una sola pagina.</h1>
+        <p>Crea, consulta, modifica, actualiza y elimina categorias sin salir del navegador. Esta vista usa tu API de Express y refleja los cambios en tiempo real.</p>
+      </div>
+
+      <div class="panel form-panel">
+        <h2 class="section-title">Formulario</h2>
+        <form id="categoriaForm">
+          <div class="field">
+            <label for="categoriaId">ID</label>
+            <input id="categoriaId" name="id" type="number" min="1" placeholder="Se llena al editar una categoria" />
+          </div>
+
+          <div class="field">
+            <label for="categoriaNombre">Nombre de la categoria</label>
+            <input id="categoriaNombre" name="nombre" type="text" maxlength="150" placeholder="Ejemplo: Tecnologia" required />
+          </div>
+
+          <div class="actions">
+            <button class="primary" id="saveButton" type="submit">Guardar categoria</button>
+            <button class="secondary" id="clearButton" type="button">Limpiar formulario</button>
+            <button class="secondary" id="searchButton" type="button">Buscar por ID</button>
+          </div>
+        </form>
+        <p class="small">Si el campo ID esta vacio, se crea una nueva categoria. Si tiene un valor, se actualiza ese registro.</p>
+      </div>
+    </section>
+
+    <section class="panel workspace">
+      <div class="workspace-header">
+        <div>
+          <h2 class="section-title">Listado de categorias</h2>
+          <p>Consulta el contenido actual de la tabla y edita registros con un clic.</p>
+        </div>
+        <div class="actions">
+          <button class="secondary" id="refreshButton" type="button">Actualizar lista</button>
+        </div>
+      </div>
+
+      <div id="status" class="status info">Cargando categorias...</div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Creado</th>
+              <th>Actualizado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="categoriasBody">
+            <tr>
+              <td colspan="5" class="empty">No hay datos cargados.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const categoriaForm = document.getElementById('categoriaForm');
+    const categoriaId = document.getElementById('categoriaId');
+    const categoriaNombre = document.getElementById('categoriaNombre');
+    const categoriasBody = document.getElementById('categoriasBody');
+    const statusBox = document.getElementById('status');
+    const saveButton = document.getElementById('saveButton');
+    const clearButton = document.getElementById('clearButton');
+    const refreshButton = document.getElementById('refreshButton');
+    const searchButton = document.getElementById('searchButton');
+
+    function setStatus(message, type = 'info') {
+      statusBox.textContent = message;
+      statusBox.className = `status ${type}`;
+    }
+
+    function formatDate(value) {
+      if (!value) return '-';
+
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+
+      return date.toLocaleString('es-MX');
+    }
+
+    function resetForm() {
+      categoriaForm.reset();
+      categoriaId.value = '';
+      categoriaNombre.focus();
+      saveButton.textContent = 'Guardar categoria';
+    }
+
+    function fillForm(item) {
+      categoriaId.value = item.id;
+      categoriaNombre.value = item.nombre || '';
+      saveButton.textContent = 'Actualizar categoria';
+      categoriaNombre.focus();
+    }
+
+    async function request(url, options = {}) {
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(options.headers || {})
+        },
+        ...options
+      });
+
+      const contentType = response.headers.get('content-type') || '';
+      const data = contentType.includes('application/json')
+        ? await response.json()
+        : await response.text();
+
+      if (!response.ok) {
+        const message = typeof data === 'object' && data !== null
+          ? data.error || data.details || 'Ocurrio un error en la solicitud'
+          : 'Ocurrio un error en la solicitud';
+        throw new Error(message);
+      }
+
+      return data;
+    }
+
+    function renderCategorias(items) {
+      if (!items.length) {
+        categoriasBody.innerHTML = '<tr><td colspan="5" class="empty">No hay categorias registradas.</td></tr>';
+        return;
+      }
+
+      categoriasBody.innerHTML = items.map((item) => `
+        <tr>
+          <td>${item.id}</td>
+          <td>${item.nombre}</td>
+          <td>${formatDate(item.createdAt)}</td>
+          <td>${formatDate(item.updatedAt)}</td>
+          <td>
+            <div class="row-actions">
+              <button class="secondary" type="button" data-action="edit" data-id="${item.id}">Editar</button>
+              <button class="danger" type="button" data-action="delete" data-id="${item.id}" data-name="${item.nombre}">Eliminar</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadCategorias() {
+      try {
+        setStatus('Cargando categorias...', 'info');
+        const items = await request('/api/categorias');
+        renderCategorias(items);
+        setStatus(`Se cargaron ${items.length} categoria(s).`, 'success');
+      } catch (error) {
+        renderCategorias([]);
+        setStatus(error.message, 'error');
+      }
+    }
+
+    async function loadCategoriaById(id) {
+      try {
+        setStatus(`Buscando la categoria ${id}...`, 'info');
+        const item = await request(`/api/categorias/${id}`);
+        fillForm(item);
+        setStatus(`Categoria ${id} cargada para edicion.`, 'success');
+      } catch (error) {
+        setStatus(error.message, 'error');
+      }
+    }
+
+    async function saveCategoria(event) {
+      event.preventDefault();
+
+      const id = categoriaId.value.trim();
+      const nombre = categoriaNombre.value.trim();
+
+      if (!nombre) {
+        setStatus('Escribe un nombre de categoria antes de guardar.', 'error');
+        categoriaNombre.focus();
+        return;
+      }
+
+      saveButton.disabled = true;
+
+      try {
+        if (id) {
+          await request(`/api/categorias/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ nombre })
+          });
+          setStatus(`Categoria ${id} actualizada correctamente.`, 'success');
+        } else {
+          const created = await request('/api/categorias', {
+            method: 'POST',
+            body: JSON.stringify({ nombre })
+          });
+          setStatus(`Categoria creada con ID ${created.id}.`, 'success');
+        }
+
+        resetForm();
+        await loadCategorias();
+      } catch (error) {
+        setStatus(error.message, 'error');
+      } finally {
+        saveButton.disabled = false;
+      }
+    }
+
+    async function deleteCategoria(id, name) {
+      const confirmed = window.confirm(`Deseas eliminar la categoria "${name}" con ID ${id}?`);
+      if (!confirmed) return;
+
+      try {
+        setStatus(`Eliminando la categoria ${id}...`, 'info');
+        await request(`/api/categorias/${id}`, { method: 'DELETE' });
+
+        if (categoriaId.value === String(id)) {
+          resetForm();
+        }
+
+        await loadCategorias();
+        setStatus(`Categoria ${id} eliminada correctamente.`, 'success');
+      } catch (error) {
+        setStatus(error.message, 'error');
+      }
+    }
+
+    categoriaForm.addEventListener('submit', saveCategoria);
+
+    clearButton.addEventListener('click', () => {
+      resetForm();
+      setStatus('Formulario limpio. Puedes crear una nueva categoria.', 'info');
+    });
+
+    refreshButton.addEventListener('click', loadCategorias);
+
+    searchButton.addEventListener('click', () => {
+      const id = categoriaId.value.trim();
+      if (!id) {
+        setStatus('Escribe un ID para buscar una categoria.', 'error');
+        categoriaId.focus();
+        return;
+      }
+      loadCategoriaById(id);
+    });
+
+    categoriasBody.addEventListener('click', (event) => {
+      const button = event.target.closest('button');
+      if (!button) return;
+
+      const { action, id, name } = button.dataset;
+      if (action === 'edit') {
+        loadCategoriaById(id);
+      }
+
+      if (action === 'delete') {
+        deleteCategoria(id, name);
+      }
+    });
+
+    loadCategorias();
+  </script>
 </body>
 </html>
