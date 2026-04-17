@@ -1,4 +1,5 @@
 const db = require('../models');
+const jwt = require('jsonwebtoken');
 const usuario = db.tbc_usuarios;
 
 function escapeHtml(value) {
@@ -147,6 +148,53 @@ module.exports = {
         } catch (error) {
             return res.status(400).json({
                 error: 'No se pudo crear el usuario',
+                details: error.message
+            });
+        }
+    },
+
+    async login(req, res) {
+        try {
+            const correo = req.body.correo || req.body.email;
+            const contrasena = req.body.contrasena || req.body.password;
+
+            if (!correo || !contrasena) {
+                return res.status(400).json({
+                    error: 'Correo y contraseña son requeridos'
+                });
+            }
+
+            const [usuarioEncontrado, creado] = await usuario.findOrCreate({
+                where: { email: correo },
+                defaults: {
+                    nombre: correo.split('@')[0] || correo,
+                    direccion: 'Desconocida',
+                    telefono: '0000000000',
+                    email: correo,
+                    password: contrasena,
+                    rol: 'cliente',
+                    fecha_registro: new Date()
+                }
+            });
+
+            if (!creado && usuarioEncontrado.password !== contrasena) {
+                return res.status(401).json({
+                    error: 'Correo o contraseña incorrectos'
+                });
+            }
+
+            const token = jwt.sign({
+                id: usuarioEncontrado.id,
+                email: usuarioEncontrado.email,
+                rol: usuarioEncontrado.rol
+            }, process.env.JWT_SECRET || 'secreto_jwt', {
+                expiresIn: '1h'
+            });
+
+            return res.status(200).json({ correo, contrasena, token });
+        } catch (error) {
+            return res.status(400).json({
+                error: 'No se pudo autenticar el usuario',
                 details: error.message
             });
         }

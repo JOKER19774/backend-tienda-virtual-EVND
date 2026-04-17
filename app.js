@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
@@ -12,6 +13,8 @@ const apiRoutes = [
   { method: 'GET', path: '/api/usuarios/:id' },
   { method: 'GET', path: '/api/usuarios/nombre/:nombre' },
   { method: 'POST', path: '/api/usuarios' },
+  { method: 'POST', path: '/api/login' },
+  { method: 'POST', path: '/api/usuarios/login' },
   { method: 'PUT', path: '/api/usuarios/:id' },
   { method: 'DELETE', path: '/api/usuarios/:id' },
   { method: 'GET', path: '/api/categorias' },
