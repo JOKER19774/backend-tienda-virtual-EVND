@@ -1,11 +1,17 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
 const http = require('http');
 const db = require('./models');
 
 const app = express();
+const corsOptions = {
+  origin: true,
+  credentials: true
+};
+
 const apiRoutes = [
   { method: 'GET', path: '/api' },
   { method: 'GET', path: '/api/products' },
@@ -41,6 +47,8 @@ const apiRoutes = [
 ];
 
 app.use(logger('dev'));
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'));
